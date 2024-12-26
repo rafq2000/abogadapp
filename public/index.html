@@ -11,17 +11,27 @@
         const firebaseConfig = {
             apiKey: "AIzaSyD242Qba3E-UgeA1UPXp9PgmjJK_Xg6VKY",
             authDomain: "deudazero-b8e33.firebaseapp.com",
-            projectId: "deudazero-b8e33"
+            projectId: "deudazero-b8e33",
+            storageBucket: "deudazero-b8e33.firebasestorage.app",
+            messagingSenderId: "763390302400",
+            appId: "1:763390302400:web:6d9f294001f9af5731b525"
         };
+
         firebase.initializeApp(firebaseConfig);
         
         async function signInWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('email');
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+            
             try {
                 const result = await firebase.auth().signInWithPopup(provider);
-                console.log(result.user);
+                console.log("Login exitoso:", result.user);
             } catch (error) {
-                console.error(error);
+                console.error("Error:", error);
+                alert(error.message);
             }
         }
     </script>
