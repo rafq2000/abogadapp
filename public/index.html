@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AbogadApp | Asistente Legal</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>AbogadApp | Inicio</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <script src="/env-config.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <style>
@@ -19,14 +22,12 @@
             --light: #f8f9fa;
             --border: #dee2e6;
         }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
-
         body {
             background: var(--background);
             min-height: 100vh;
@@ -35,35 +36,31 @@
             justify-content: center;
             padding: 20px;
         }
-
         .auth-container {
             background: white;
-            padding: 2rem;
-            border-radius: 20px;
+            padding: 2.5rem;
+            border-radius: 16px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 400px;
             overflow: hidden;
         }
-
         .logo-container {
             text-align: center;
             margin-bottom: 2rem;
         }
-
         .logo {
             width: 120px;
             height: 120px;
             margin-bottom: 1rem;
+            object-fit: contain;
         }
-
         .subtitle {
             color: var(--dark);
             font-size: 0.95rem;
             margin-bottom: 2rem;
             text-align: center;
         }
-
         .btn {
             width: 100%;
             padding: 0.875rem;
@@ -79,48 +76,49 @@
             gap: 0.5rem;
             margin-bottom: 1rem;
         }
-
         .btn-google {
             background: white;
             border: 2px solid var(--border);
             color: var(--dark);
         }
-
         .btn-google:hover {
             background: var(--light);
+            transform: translateY(-1px);
         }
-
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--accent);
+            transform: translateY(-1px);
+        }
         .divider {
             display: flex;
             align-items: center;
             text-align: center;
             margin: 1.5rem 0;
         }
-
         .divider::before,
         .divider::after {
             content: '';
             flex: 1;
             border-bottom: 1px solid var(--border);
         }
-
         .divider span {
             padding: 0 1rem;
             color: #666;
             font-size: 0.9rem;
         }
-
         .form-group {
             margin-bottom: 1.5rem;
         }
-
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             color: var(--dark);
             font-weight: 500;
         }
-
         .form-control {
             width: 100%;
             padding: 0.875rem 1rem;
@@ -129,79 +127,47 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-
         .form-control:focus {
             outline: none;
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(44,115,210,0.1);
         }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--accent);
-            transform: translateY(-1px);
-        }
-
         .alert {
             padding: 1rem;
             border-radius: 12px;
             margin-bottom: 1rem;
             display: none;
         }
-
         .alert-error {
             background: #fff5f5;
             color: var(--error);
             border: 1px solid var(--error);
         }
-
         .alert-success {
             background: #f0fff4;
             color: var(--success);
             border: 1px solid var(--success);
         }
-
-        .tabs {
-            display: flex;
-            margin: 1.5rem 0;
-            gap: 1rem;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 0.875rem;
-            text-align: center;
-            color: var(--dark);
-            background: none;
-            border: none;
-            border-bottom: 2px solid var(--border);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-            font-weight: 500;
-        }
-
         .form-footer {
             text-align: center;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
         }
-
         .form-footer a {
             color: var(--accent);
             text-decoration: none;
             font-size: 0.9rem;
         }
-
         .form-footer a:hover {
             text-decoration: underline;
+        }
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 1.5rem;
+            }
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
         }
     </style>
 </head>
@@ -222,11 +188,6 @@
 
         <div class="divider">
             <span>o continúa con email</span>
-        </div>
-
-        <div class="tabs">
-            <button class="tab active" id="loginTab">Iniciar Sesión</button>
-            <button class="tab" id="registerTab">Registrarse</button>
         </div>
 
         <form id="loginForm">
@@ -325,50 +286,22 @@
             setTimeout(() => alert.style.display = 'none', 5000);
         }
 
-        function switchTab(tab) {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('registerForm').style.display = 'none';
-            document.getElementById('resetForm').style.display = 'none';
-            
-            document.getElementById(tab + 'Form').style.display = 'block';
-            
-            document.getElementById('loginTab').classList.toggle('active', tab === 'login');
-            document.getElementById('registerTab').classList.toggle('active', tab === 'register');
-            
-            document.getElementById('alertError').style.display = 'none';
-            document.getElementById('alertSuccess').style.display = 'none';
-        }
-
         async function signInWithGoogle() {
             try {
                 const provider = new firebase.auth.GoogleAuthProvider();
                 provider.addScope('email');
                 const result = await auth.signInWithPopup(provider);
                 console.log("Login exitoso:", result.user);
-                if (result.user) {
-                    window.location.href = '/menu';
-                }
             } catch (error) {
-                console.error("Error en autenticación:", error);
+                console.error("Error:", error);
                 showError(error.message);
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('loginTab').addEventListener('click', () => switchTab('login'));
-            document.getElementById('registerTab').addEventListener('click', () => switchTab('register'));
             document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
-            document.getElementById('resetPasswordLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                switchTab('reset');
-            });
-            document.getElementById('backToLoginLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                switchTab('login');
-            });
 
-            const loginForm = document.getElementById('loginForm');
-            loginForm?.addEventListener('submit', async (e) => {
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 try {
                     const email = document.getElementById('loginEmail').value;
@@ -391,8 +324,7 @@
                 }
             });
 
-            const registerForm = document.getElementById('registerForm');
-            registerForm?.addEventListener('submit', async (e) => {
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const name = document.getElementById('registerName').value;
                 const email = document.getElementById('registerEmail').value;
@@ -414,14 +346,26 @@
                 }
             });
 
-            const resetForm = document.getElementById('resetForm');
-            resetForm?.addEventListener('submit', async (e) => {
+            document.getElementById('resetPasswordLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('resetForm').style.display = 'block';
+            });
+
+            document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('resetForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            });
+
+            document.getElementById('resetForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('resetEmail').value;
                 try {
                     await auth.sendPasswordResetEmail(email);
                     showSuccess("Se ha enviado un correo de recuperación");
-                    switchTab('login');
+                    document.getElementById('resetForm').style.display = 'none';
+                    document.getElementById('loginForm').style.display = 'block';
                 } catch (error) {
                     const errorMessages = {
                         'auth/user-not-found': 'No existe una cuenta con este email',
