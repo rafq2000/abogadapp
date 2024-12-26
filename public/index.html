@@ -1,12 +1,277 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>AbogadApp</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AbogadApp | Asistente Legal</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        :root {
+            --primary: #1a4f8a;
+            --secondary: #45b69c;
+            --accent: #2c73d2;
+            --background: #f0f9ff;
+            --error: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --dark: #333;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: var(--dark);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-google {
+            background: white;
+            border: 2px solid var(--border);
+            color: var(--dark);
+        }
+
+        .btn-google:hover {
+            background: var(--light);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(44,115,210,0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .alert-error {
+            background: #fff5f5;
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .tabs {
+            display: flex;
+            margin: 1.5rem 0;
+            gap: 1rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.875rem;
+            text-align: center;
+            color: var(--dark);
+            background: none;
+            border: none;
+            border-bottom: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 500;
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .form-footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <button onclick="signInWithGoogle()">Iniciar sesión con Google</button>
+    <div class="auth-container">
+        <div class="logo-container">
+            <img src="/assets/logo.png" alt="AbogadApp Logo" class="logo">
+            <p class="subtitle">Tu asistente legal especializado en consultas legales</p>
+        </div>
+
+        <div id="alertError" class="alert alert-error"></div>
+        <div id="alertSuccess" class="alert alert-success"></div>
+
+        <button class="btn btn-google" id="googleSignInBtn">
+            <img src="/assets/google-icon.png" width="24" height="24" alt="Google">
+            Continuar con Google
+        </button>
+
+        <div class="divider">
+            <span>o continúa con email</span>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" id="loginTab">Iniciar Sesión</button>
+            <button class="tab" id="registerTab">Registrarse</button>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Correo electrónico</label>
+                <input type="email" id="loginEmail" class="form-control" required placeholder="tucorreo@ejemplo.com">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Contraseña</label>
+                <input type="password" id="loginPassword" class="form-control" required placeholder="Tu contraseña">
+            </div>
+            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+            <div class="form-footer">
+                <a href="#" id="resetPasswordLink">¿Olvidaste tu contraseña?</a>
+            </div>
+        </form>
+
+        <form id="registerForm" style="display: none;">
+            <div class="form-group">
+                <label for="registerName">Nombre completo</label>
+                <input type="text" id="registerName" class="form-control" required placeholder="Tu nombre completo">
+            </div>
+            <div class="form-group">
+                <label for="registerEmail">Correo electrónico</label>
+                <input type="email" id="registerEmail" class="form-control" required placeholder="tucorreo@ejemplo.com">
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Contraseña</label>
+                <input type="password" id="registerPassword" class="form-control" required placeholder="Mínimo 8 caracteres">
+            </div>
+            <button type="submit" class="btn btn-primary">Crear Cuenta</button>
+        </form>
+
+        <form id="resetForm" style="display: none;">
+            <div class="form-group">
+                <label for="resetEmail">Correo electrónico</label>
+                <input type="email" id="resetEmail" class="form-control" required placeholder="tucorreo@ejemplo.com">
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar correo de recuperación</button>
+            <div class="form-footer">
+                <a href="#" id="backToLoginLink">Volver al inicio de sesión</a>
+            </div>
+        </form>
+    </div>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyD242Qba3E-UgeA1UPXp9PgmjJK_Xg6VKY",
@@ -17,23 +282,155 @@
             appId: "1:763390302400:web:6d9f294001f9af5731b525"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        
-        async function signInWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.addScope('email');
-            provider.setCustomParameters({
-                prompt: 'select_account'
-            });
+        let auth;
+        let initializing = true;
+
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            console.log("Firebase inicializado correctamente");
+        } catch (error) {
+            console.error("Error al inicializar Firebase:", error);
+            showError("Error al inicializar la aplicación");
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (initializing) {
+                initializing = false;
+                return;
+            }
+
+            if (user) {
+                if (user.emailVerified || user.providerData[0].providerId === 'google.com') {
+                    console.log("Usuario autenticado:", user.email);
+                    window.location.href = '/menu';
+                } else {
+                    showError("Por favor verifica tu email antes de iniciar sesión");
+                    auth.signOut();
+                }
+            }
+        });
+
+        function showError(message) {
+            const alert = document.getElementById('alertError');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        function showSuccess(message) {
+            const alert = document.getElementById('alertSuccess');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        function switchTab(tab) {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('resetForm').style.display = 'none';
             
+            document.getElementById(tab + 'Form').style.display = 'block';
+            
+            document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+            document.getElementById('registerTab').classList.toggle('active', tab === 'register');
+            
+            document.getElementById('alertError').style.display = 'none';
+            document.getElementById('alertSuccess').style.display = 'none';
+        }
+
+        async function signInWithGoogle() {
             try {
-                const result = await firebase.auth().signInWithPopup(provider);
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('email');
+                const result = await auth.signInWithPopup(provider);
                 console.log("Login exitoso:", result.user);
+                if (result.user) {
+                    window.location.href = '/menu';
+                }
             } catch (error) {
-                console.error("Error:", error);
-                alert(error.message);
+                console.error("Error en autenticación:", error);
+                showError(error.message);
             }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('loginTab').addEventListener('click', () => switchTab('login'));
+            document.getElementById('registerTab').addEventListener('click', () => switchTab('register'));
+            document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
+            document.getElementById('resetPasswordLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                switchTab('reset');
+            });
+            document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                switchTab('login');
+            });
+
+            const loginForm = document.getElementById('loginForm');
+            loginForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+                    const result = await auth.signInWithEmailAndPassword(email, password);
+                    
+                    if (!result.user.emailVerified) {
+                        await auth.signOut();
+                        showError("Por favor verifica tu email antes de iniciar sesión");
+                        return;
+                    }
+                } catch (error) {
+                    const errorMessages = {
+                        'auth/wrong-password': 'Contraseña incorrecta',
+                        'auth/user-not-found': 'Usuario no encontrado',
+                        'auth/invalid-email': 'Email inválido',
+                        'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde'
+                    };
+                    showError(errorMessages[error.code] || error.message);
+                }
+            });
+
+            const registerForm = document.getElementById('registerForm');
+            registerForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('registerName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+
+                try {
+                    const result = await auth.createUserWithEmailAndPassword(email, password);
+                    await result.user.updateProfile({ displayName: name });
+                    await result.user.sendEmailVerification();
+                    showSuccess("Cuenta creada. Por favor verifica tu email");
+                    switchTab('login');
+                } catch (error) {
+                    const errorMessages = {
+                        'auth/weak-password': 'La contraseña es muy débil',
+                        'auth/email-already-in-use': 'Este email ya está registrado',
+                        'auth/invalid-email': 'Email inválido'
+                    };
+                    showError(errorMessages[error.code] || error.message);
+                }
+            });
+
+            const resetForm = document.getElementById('resetForm');
+            resetForm?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('resetEmail').value;
+                try {
+                    await auth.sendPasswordResetEmail(email);
+                    showSuccess("Se ha enviado un correo de recuperación");
+                    switchTab('login');
+                } catch (error) {
+                    const errorMessages = {
+                        'auth/user-not-found': 'No existe una cuenta con este email',
+                        'auth/invalid-email': 'Email inválido'
+                    };
+                    showError(errorMessages[error.code] || error.message);
+                }
+            });
+        });
     </script>
 </body>
 </html>
