@@ -3,41 +3,44 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Menú</title>
+  <title>Menú Principal</title>
+  <!-- Cargamos las mismas variables -->
+  <script src="/env-config.js"></script>
+  <!-- Firebase scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 </head>
 <body>
-  <h1>Menú Principal</h1>
-  <p>Solo usuarios autenticados pueden ver esto.</p>
+  <h1>Menú principal</h1>
+  <p>Solo usuarios autenticados pueden ver esto</p>
   <button id="logoutBtn">Cerrar Sesión</button>
 
   <script>
-    // Reutilizamos la misma config
+    // Inicializar Firebase (igual que en index.html)
     const firebaseConfig = {
-      apiKey: "TU_API_KEY",
-      authDomain: "TU_AUTH_DOMAIN",
-      projectId: "TU_PROJECT_ID",
-      storageBucket: "TU_STORAGE_BUCKET",
-      messagingSenderId: "TU_MESSAGING_SENDER_ID",
-      appId: "TU_APP_ID"
+      apiKey: window.ENV.FIREBASE_API_KEY,
+      authDomain: window.ENV.FIREBASE_AUTH_DOMAIN,
+      projectId: window.ENV.FIREBASE_PROJECT_ID,
+      storageBucket: window.ENV.FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: window.ENV.FIREBASE_MESSAGING_SENDER_ID,
+      appId: window.ENV.FIREBASE_APP_ID
     };
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
     const auth = firebase.auth();
 
-    // Verificar usuario
+    // Verificar el usuario al cargar la página
     auth.onAuthStateChanged(user => {
       if (!user) {
-        // No hay usuario, redirigimos a index
+        // No hay usuario, mandar a index
         window.location.href = '/';
       } else {
         console.log("Usuario en menu:", user.email);
       }
     });
 
-    // Cerrar sesión
+    // Botón de logout
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       await auth.signOut();
       window.location.href = '/';
