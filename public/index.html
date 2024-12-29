@@ -1,380 +1,50 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>AbogadApp | Inicio</title>
-    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-    <script src="/env-config.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    <style>
-        :root {
-            --primary: #1a4f8a;
-            --secondary: #45b69c;
-            --accent: #2c73d2;
-            --background: #f0f9ff;
-            --error: #dc3545;
-            --success: #28a745;
-            --warning: #ffc107;
-            --dark: #333;
-            --light: #f8f9fa;
-            --border: #dee2e6;
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-        body {
-            background: var(--background);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .auth-container {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-            overflow: hidden;
-        }
-        .logo-container {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .logo {
-            width: 120px;
-            height: 120px;
-            margin-bottom: 1rem;
-            object-fit: contain;
-        }
-        .subtitle {
-            color: var(--dark);
-            font-size: 0.95rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-        .btn {
-            width: 100%;
-            padding: 0.875rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .btn-google {
-            background: white;
-            border: 2px solid var(--border);
-            color: var(--dark);
-        }
-        .btn-google:hover {
-            background: var(--light);
-            transform: translateY(-1px);
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            background: var(--accent);
-            transform: translateY(-1px);
-        }
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 1.5rem 0;
-        }
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid var(--border);
-        }
-        .divider span {
-            padding: 0 1rem;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--dark);
-            font-weight: 500;
-        }
-        .form-control {
-            width: 100%;
-            padding: 0.875rem 1rem;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(44,115,210,0.1);
-        }
-        .alert {
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-        .alert-error {
-            background: #fff5f5;
-            color: var(--error);
-            border: 1px solid var(--error);
-        }
-        .alert-success {
-            background: #f0fff4;
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-        .form-footer {
-            text-align: center;
-            margin-top: 1rem;
-        }
-        .form-footer a {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-        .form-footer a:hover {
-            text-decoration: underline;
-        }
-        @media (max-width: 480px) {
-            .auth-container {
-                padding: 1.5rem;
-            }
-            .logo {
-                width: 100px;
-                height: 100px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Inicio de Sesión</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 </head>
 <body>
-    <div class="auth-container">
-        <div class="logo-container">
-            <img src="/assets/logo.png" alt="AbogadApp Logo" class="logo">
-            <p class="subtitle">Tu asistente legal especializado en consultas legales</p>
-        </div>
+  <h1>Bienvenido</h1>
+  <button id="googleLoginBtn">Iniciar sesión con Google</button>
 
-        <div id="alertError" class="alert alert-error"></div>
-        <div id="alertSuccess" class="alert alert-success"></div>
+  <script>
+    // Config de Firebase
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_STORAGE_BUCKET",
+      messagingSenderId: "TU_MESSAGING_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
+    // Inicializamos
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-        <button class="btn btn-google" id="googleSignInBtn">
-            <img src="/assets/google-icon.png" width="24" height="24" alt="Google">
-            Continuar con Google
-        </button>
+    // Botón de Google
+    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        await auth.signInWithPopup(provider);
+        // Si el login fue exitoso, vamos a /menu
+        window.location.href = '/menu';
+      } catch (error) {
+        console.error("Error al iniciar sesión:", error);
+        alert("Error en el login: " + error.message);
+      }
+    });
 
-        <div class="divider">
-            <span>o continúa con email</span>
-        </div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="loginEmail">Correo electrónico</label>
-                <input type="email" id="loginEmail" class="form-control" required placeholder="tucorreo@ejemplo.com">
-            </div>
-            <div class="form-group">
-                <label for="loginPassword">Contraseña</label>
-                <input type="password" id="loginPassword" class="form-control" required placeholder="Tu contraseña">
-            </div>
-            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-            <div class="form-footer">
-                <a href="#" id="resetPasswordLink">¿Olvidaste tu contraseña?</a>
-            </div>
-        </form>
-
-        <form id="registerForm" style="display: none;">
-            <div class="form-group">
-                <label for="registerName">Nombre completo</label>
-                <input type="text" id="registerName" class="form-control" required placeholder="Tu nombre completo">
-            </div>
-            <div class="form-group">
-                <label for="registerEmail">Correo electrónico</label>
-                <input type="email" id="registerEmail" class="form-control" required placeholder="tucorreo@ejemplo.com">
-            </div>
-            <div class="form-group">
-                <label for="registerPassword">Contraseña</label>
-                <input type="password" id="registerPassword" class="form-control" required placeholder="Mínimo 8 caracteres">
-            </div>
-            <button type="submit" class="btn btn-primary">Crear Cuenta</button>
-        </form>
-
-        <form id="resetForm" style="display: none;">
-            <div class="form-group">
-                <label for="resetEmail">Correo electrónico</label>
-                <input type="email" id="resetEmail" class="form-control" required placeholder="tucorreo@ejemplo.com">
-            </div>
-            <button type="submit" class="btn btn-primary">Enviar correo de recuperación</button>
-            <div class="form-footer">
-                <a href="#" id="backToLoginLink">Volver al inicio de sesión</a>
-            </div>
-        </form>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD242Qba3E-UgeA1UPXp9PgmjJK_Xg6VKY",
-            authDomain: "deudazero-b8e33.firebaseapp.com",
-            projectId: "deudazero-b8e33",
-            storageBucket: "deudazero-b8e33.firebasestorage.app",
-            messagingSenderId: "763390302400",
-            appId: "1:763390302400:web:6d9f294001f9af5731b525"
-        };
-
-        let auth;
-        let initializing = true;
-
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            console.log("Firebase inicializado correctamente");
-        } catch (error) {
-            console.error("Error al inicializar Firebase:", error);
-            showError("Error al inicializar la aplicación");
-        }
-
-        auth.onAuthStateChanged((user) => {
-            if (initializing) {
-                initializing = false;
-                return;
-            }
-
-            if (user) {
-                if (user.emailVerified || user.providerData[0].providerId === 'google.com') {
-                    console.log("Usuario autenticado:", user.email);
-                    window.location.href = '/menu';
-                } else {
-                    showError("Por favor verifica tu email antes de iniciar sesión");
-                    auth.signOut();
-                }
-            }
-        });
-
-        function showError(message) {
-            const alert = document.getElementById('alertError');
-            alert.textContent = message;
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 5000);
-        }
-
-        function showSuccess(message) {
-            const alert = document.getElementById('alertSuccess');
-            alert.textContent = message;
-            alert.style.display = 'block';
-            setTimeout(() => alert.style.display = 'none', 5000);
-        }
-
-        async function signInWithGoogle() {
-            try {
-                const provider = new firebase.auth.GoogleAuthProvider();
-                provider.addScope('email');
-                const result = await auth.signInWithPopup(provider);
-                console.log("Login exitoso:", result.user);
-            } catch (error) {
-                console.error("Error:", error);
-                showError(error.message);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
-
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                try {
-                    const email = document.getElementById('loginEmail').value;
-                    const password = document.getElementById('loginPassword').value;
-                    const result = await auth.signInWithEmailAndPassword(email, password);
-                    
-                    if (!result.user.emailVerified) {
-                        await auth.signOut();
-                        showError("Por favor verifica tu email antes de iniciar sesión");
-                        return;
-                    }
-                } catch (error) {
-                    const errorMessages = {
-                        'auth/wrong-password': 'Contraseña incorrecta',
-                        'auth/user-not-found': 'Usuario no encontrado',
-                        'auth/invalid-email': 'Email inválido',
-                        'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde'
-                    };
-                    showError(errorMessages[error.code] || error.message);
-                }
-            });
-
-            document.getElementById('registerForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('registerName').value;
-                const email = document.getElementById('registerEmail').value;
-                const password = document.getElementById('registerPassword').value;
-
-                try {
-                    const result = await auth.createUserWithEmailAndPassword(email, password);
-                    await result.user.updateProfile({ displayName: name });
-                    await result.user.sendEmailVerification();
-                    showSuccess("Cuenta creada. Por favor verifica tu email");
-                    switchTab('login');
-                } catch (error) {
-                    const errorMessages = {
-                        'auth/weak-password': 'La contraseña es muy débil',
-                        'auth/email-already-in-use': 'Este email ya está registrado',
-                        'auth/invalid-email': 'Email inválido'
-                    };
-                    showError(errorMessages[error.code] || error.message);
-                }
-            });
-
-            document.getElementById('resetPasswordLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('resetForm').style.display = 'block';
-            });
-
-            document.getElementById('backToLoginLink').addEventListener('click', (e) => {
-                e.preventDefault();
-                document.getElementById('resetForm').style.display = 'none';
-                document.getElementById('loginForm').style.display = 'block';
-            });
-
-            document.getElementById('resetForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('resetEmail').value;
-                try {
-                    await auth.sendPasswordResetEmail(email);
-                    showSuccess("Se ha enviado un correo de recuperación");
-                    document.getElementById('resetForm').style.display = 'none';
-                    document.getElementById('loginForm').style.display = 'block';
-                } catch (error) {
-                    const errorMessages = {
-                        'auth/user-not-found': 'No existe una cuenta con este email',
-                        'auth/invalid-email': 'Email inválido'
-                    };
-                    showError(errorMessages[error.code] || error.message);
-                }
-            });
-        });
-    </script>
+    // Si ya está logueado, redirigimos directo a /menu
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        console.log("Usuario autenticado, redirigiendo a /menu");
+        window.location.href = '/menu';
+      }
+    });
+  </script>
 </body>
 </html>
