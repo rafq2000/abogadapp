@@ -1,50 +1,441 @@
-<!-- public/menu.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Menú Principal</title>
-  <!-- Cargamos las mismas variables -->
-  <script src="/env-config.js"></script>
-  <!-- Firebase scripts -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AbogadApp | Menú Principal</title>
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <!-- Scripts necesarios para Firebase -->
+    <script src="/env-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        /* Definimos variables CSS para mantener consistencia en los colores */
+        :root {
+            --primary: #1a4f8a;
+            --secondary: #45b69c;
+            --accent: #2c73d2;
+            --background: #f0f9ff;
+            --error: #dc3545;
+            --success: #28a745;
+            --dark: #333;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+        }
+
+        /* Estilos base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Estilos del encabezado */
+        .header {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-radius: 10px;
+        }
+
+        .logo {
+            width: 150px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-name {
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--primary);
+        }
+
+        /* Estilos del contenedor principal */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Estilos de las opciones del menú */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option-item:hover {
+            border-color: var(--accent);
+            background-color: #f8f9ff;
+            transform: translateX(5px);
+        }
+
+        .option-item input[type="radio"] {
+            display: none;
+        }
+
+        .option-item.selected {
+            border-color: var(--accent);
+            background-color: #f0f7ff;
+        }
+
+        .option-icon {
+            font-size: 1.8rem;
+            margin-right: 15px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .option-content {
+            flex: 1;
+        }
+
+        .option-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .option-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Estilos para opciones inactivas */
+        .option-item.inactive {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .option-item.inactive:hover {
+            border-color: var(--border);
+            background-color: white;
+            transform: none;
+        }
+
+        /* Estilos especiales para la opción de documentos */
+        .document-option {
+            background: linear-gradient(145deg, #34495e, #2c3e50);
+            border: none !important;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .document-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(52, 73, 94, 0.2);
+        }
+
+        .document-option .option-title,
+        .document-option .option-description {
+            color: white !important;
+        }
+
+        /* Estilos del spinner de carga */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Diseño responsivo */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .option-item {
+                padding: 12px;
+            }
+
+            .option-icon {
+                font-size: 1.5rem;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .option-title {
+                font-size: 1rem;
+            }
+            .option-description {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Menú principal</h1>
-  <p>Solo usuarios autenticados pueden ver esto</p>
-  <button id="logoutBtn">Cerrar Sesión</button>
+    <!-- Spinner de carga -->
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+    </div>
 
-  <script>
-    // Inicializar Firebase (igual que en index.html)
-    const firebaseConfig = {
-      apiKey: window.ENV.FIREBASE_API_KEY,
-      authDomain: window.ENV.FIREBASE_AUTH_DOMAIN,
-      projectId: window.ENV.FIREBASE_PROJECT_ID,
-      storageBucket: window.ENV.FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: window.ENV.FIREBASE_MESSAGING_SENDER_ID,
-      appId: window.ENV.FIREBASE_APP_ID
-    };
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const auth = firebase.auth();
+    <!-- Encabezado con logo y datos del usuario -->
+    <header class="header">
+        <img src="/assets/logo.png" alt="AbogadApp Logo" class="logo">
+        <div class="user-info">
+            <span id="userName" class="user-name">Cargando...</span>
+            <button id="logoutButton" class="logout-btn">Cerrar sesión</button>
+        </div>
+    </header>
 
-    // Verificar el usuario al cargar la página
-    auth.onAuthStateChanged(user => {
-      if (!user) {
-        // No hay usuario, mandar a index
-        window.location.href = '/';
-      } else {
-        console.log("Usuario en menu:", user.email);
-      }
-    });
+    <!-- Contenedor principal -->
+    <div class="container">
+        <h1 class="title">¿Qué tipo de ayuda necesitas?</h1>
+        
+        <div class="options-container">
+            <!-- Opción de Deudas -->
+            <label class="option-item" onclick="window.location.href='/chat'">
+                <input type="radio" name="category" value="deudas">
+                <div class="option-icon">💰</div>
+                <div class="option-content">
+                    <div class="option-title">Tengo problemas con deudas o bancos</div>
+                    <div class="option-description">
+                        Deudas bancarias, créditos, repactaciones, quiebra personal
+                    </div>
+                </div>
+            </label>
 
-    // Botón de logout
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await auth.signOut();
-      window.location.href = '/';
-    });
-  </script>
+            <!-- Opción de Documentos -->
+            <label class="option-item document-option" onclick="window.location.href='/document-chat'">
+                <div class="option-icon">📄</div>
+                <div class="option-content">
+                    <div class="option-title">Analizar Documentos</div>
+                    <div class="option-description">
+                        Sube contratos, resoluciones o documentos legales para recibir una explicación clara y simple
+                    </div>
+                </div>
+            </label>
+
+            <!-- Opciones inactivas -->
+            <!-- Familia -->
+            <label class="option-item inactive" onclick="optionInDevelopment()">
+                <input type="radio" name="category" value="familia">
+                <div class="option-icon">👨‍👩‍👧‍👦</div>
+                <div class="option-content">
+                    <div class="option-title">
+                        Tengo un problema familiar <small>(en desarrollo)</small>
+                    </div>
+                    <div class="option-description">
+                        Divorcios, pensión de alimentos, custodia de hijos
+                    </div>
+                </div>
+            </label>
+
+            <!-- Laboral -->
+            <label class="option-item inactive" onclick="optionInDevelopment()">
+                <input type="radio" name="category" value="laboral">
+                <div class="option-icon">💼</div>
+                <div class="option-content">
+                    <div class="option-title">
+                        Tengo problemas en mi trabajo <small>(en desarrollo)</small>
+                    </div>
+                    <div class="option-description">
+                        Despidos, sueldos impagos, accidentes laborales
+                    </div>
+                </div>
+            </label>
+
+            <!-- Otras opciones inactivas... -->
+            
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Firebase usando variables de entorno
+        const firebaseConfig = {
+            apiKey: window.ENV.FIREBASE_API_KEY,
+            authDomain: window.ENV.FIREBASE_AUTH_DOMAIN,
+            projectId: window.ENV.FIREBASE_PROJECT_ID,
+            storageBucket: window.ENV.FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: window.ENV.FIREBASE_MESSAGING_SENDER_ID,
+            appId: window.ENV.FIREBASE_APP_ID
+        };
+
+        let auth;
+
+        // Inicialización de Firebase
+        try {
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            auth = firebase.auth();
+            console.log("Firebase inicializado correctamente");
+        } catch (error) {
+            console.error("Error al inicializar Firebase:", error);
+            window.location.href = '/';
+        }
+
+        // Verificación de autenticación
+        auth.onAuthStateChanged((user) => {
+            console.log("Estado de autenticación cambiado:", user ? "Usuario autenticado" : "No autenticado");
+            
+            if (!user) {
+                console.log("No hay usuario autenticado, redirigiendo a inicio");
+                window.location.replace('/');
+                return;
+            }
+
+            const userName = document.getElementById('userName');
+            if (userName) {
+                userName.textContent = user.displayName || user.email || 'Usuario';
+            }
+            toggleLoading(false);
+        });
+
+        // Función para mostrar/ocultar el spinner de carga
+        function toggleLoading(show) {
+            const loader = document.getElementById('loading');
+            if (loader) {
+                loader.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // Función para manejar opciones en desarrollo
+        function optionInDevelopment() {
+            alert("Esta opción está en desarrollo. ¡Pronto estará disponible!");
+        }
+
+        // Manejador para el botón de cerrar sesión
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            toggleLoading(true);
+            try {
+                await auth.signOut();
+                window.location.href = '/';
+            } catch (error) {
+                console.error("Error al cerrar sesión:", error);
+                toggleLoading(false);
+                alert("Error al cerrar sesión. Por favor, intenta nuevamente.");
+            }
+        });
+
+        // Event listeners para el estado de la conexión
+        window.addEventListener('online', () => {
+            document.body.style.opacity = '1';
+            const options = document.querySelectorAll('.option-item:not(.inactive)');
+            options.forEach(option => option.style.pointerEvents = 'auto');
+        });
+
+        window.addEventListener('offline', () => {
+            document.body.style.opacity = '0.7';
+            const options = document.querySelectorAll('.option-item');
+            options.forEach(option => option.style.pointerEvents = 'none');
+            alert('Se perdió la conexión a internet. Por favor, verifica tu conexión.');
+        });
+
+        // Inicialización cuando el DOM está listo
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleLoading(true);
+            
+            // Prevenir clicks múltiples en opciones
+            const options = document.querySelectorAll('.option-item:not(.inactive)');
+            options.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    const isProcessing = option.getAttribute('data-processing');
+                    if (isProcessing === 'true') {
+                        e.preventDefault();
+                        return;
+                    }
+                    option.setAttribute('data-processing', 'true');
+                    setTimeout(() => {
+                        option.removeAttribute('data-processing');
+                    }, 1000);
+                });
+            });
+        });
+
+        // Manejo de errores global
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('Error:', error);
+            toggleLoading(false);
+            alert('Ocurrió un error inesperado. Por favor, recarga la página.');
+            return false;
+        };
+    </script>
 </body>
 </html>

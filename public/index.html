@@ -1,61 +1,644 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Inicio de Sesión</title>
-  <!-- Cargamos variables del servidor -->
-  <script src="/env-config.js"></script>
-  <!-- Firebase scripts (compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>AbogadApp | Inicio</title>
+    
+    <!-- Recursos externos necesarios -->
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+    <script src="/env-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    
+    <style>
+        /* Variables globales para consistencia en el diseño */
+        :root {
+            --primary: #1a4f8a;
+            --secondary: #45b69c;
+            --accent: #2c73d2;
+            --background: #f0f9ff;
+            --error: #dc3545;
+            --success: #28a745;
+            --warning: #ffc107;
+            --dark: #333;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+        }
+
+        /* Reset básico y configuración de fuentes */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Estilos base del body */
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Loader para indicar procesos */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Contenedor principal */
+        .auth-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Estilos del logo y título */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+            object-fit: contain;
+        }
+
+        .subtitle {
+            color: var(--dark);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* Estilos de botones */
+        .btn {
+            width: 100%;
+            padding: 0.875rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-google {
+            background: white;
+            border: 2px solid var(--border);
+            color: var(--dark);
+        }
+
+        .btn-google:hover:not(:disabled) {
+            background: var(--light);
+            transform: translateY(-1px);
+        }
+
+        .btn-google:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* Divisor con línea */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Estilos de formulario */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(44,115,210,0.1);
+        }
+
+        /* Alertas y mensajes */
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: none;
+            position: relative;
+        }
+
+        .alert-error {
+            background: #fff5f5;
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        /* Footer del formulario */
+        .form-footer {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .form-footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+            color: var(--primary);
+        }
+
+        /* Diseño responsivo */
+        @media (max-width: 480px) {
+            .auth-container {
+                padding: 1.5rem;
+            }
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Bienvenido</h1>
-  <button id="googleLoginBtn">Iniciar sesión con Google</button>
+    <!-- Indicador de carga -->
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+    </div>
 
-  <script>
-    // 1. Esperamos a que env-config.js se cargue y defina window.ENV
-    //    Validamos que las variables existan.
-    const firebaseConfig = {
-      apiKey: window.ENV.FIREBASE_API_KEY,
-      authDomain: window.ENV.FIREBASE_AUTH_DOMAIN,
-      projectId: window.ENV.FIREBASE_PROJECT_ID,
-      storageBucket: window.ENV.FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: window.ENV.FIREBASE_MESSAGING_SENDER_ID,
-      appId: window.ENV.FIREBASE_APP_ID
-    };
+    <!-- Contenedor principal -->
+    <div class="auth-container">
+        <!-- Logo y título -->
+        <div class="logo-container">
+            <img src="/assets/logo.png" alt="AbogadApp Logo" class="logo">
+            <p class="subtitle">Tu asistente legal especializado en consultas legales</p>
+        </div>
 
-    // 2. Inicializamos Firebase
-    try {
-      firebase.initializeApp(firebaseConfig);
-    } catch (error) {
-      console.error("Error inicializando Firebase:", error);
-      alert("Error en el login: " + error.message);
-    }
+        <!-- Alertas para feedback -->
+        <div id="alertError" class="alert alert-error" role="alert"></div>
+        <div id="alertSuccess" class="alert alert-success" role="alert"></div>
 
-    const auth = firebase.auth();
+        <!-- Botón de Google -->
+        <button class="btn btn-google" id="googleSignInBtn" type="button">
+            <img src="/assets/google-icon.png" width="24" height="24" alt="Google">
+            Continuar con Google
+        </button>
 
-    // 3. Botón para iniciar sesión con Google
-    document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-        const result = await auth.signInWithPopup(provider);
-        // Login exitoso, redirigir a /menu
-        window.location.href = '/menu';
-      } catch (error) {
-        console.error("Error al iniciar sesión:", error);
-        alert("Error en el login: " + error.message);
-      }
-    });
+        <!-- Separador -->
+        <div class="divider">
+            <span>o continúa con email</span>
+        </div>
 
-    // 4. Si el usuario ya está autenticado, vamos directo a /menu
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        console.log("Usuario autenticado:", user.email);
-        window.location.href = '/menu';
-      }
-    });
-  </script>
+        <!-- Formulario de login -->
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Correo electrónico</label>
+                <input type="email" id="loginEmail" class="form-control" required 
+                       placeholder="tucorreo@ejemplo.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Contraseña</label>
+                <input type="password" id="loginPassword" class="form-control" required 
+                       placeholder="Tu contraseña" autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+            <div class="form-footer">
+                <a href="#" id="resetPasswordLink">¿Olvidaste tu contraseña?</a>
+            </div>
+        </form>
+
+        <!-- Formulario de registro -->
+        <form id="registerForm" style="display: none;">
+            <div class="form-group">
+                <label for="registerName">Nombre completo</label>
+                <input type="text" id="registerName" class="form-control" required 
+                       placeholder="Tu nombre completo" autocomplete="name">
+            </div>
+            <div class="form-group">
+                <label for="registerEmail">Correo electrónico</label>
+                <input type="email" id="registerEmail" class="form-control" required 
+                       placeholder="tucorreo@ejemplo.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">Contraseña</label>
+                <input type="password" id="registerPassword" class="form-control" required 
+                       placeholder="Mínimo 8 caracteres" autocomplete="new-password">
+            </div>
+            <button type="submit" class="btn btn-primary">Crear Cuenta</button>
+        </form>
+
+        <!-- Formulario de recuperación de contraseña -->
+        <form id="resetForm" style="display: none;">
+            <div class="form-group">
+                <label for="resetEmail">Correo electrónico</label>
+                <input type="email" id="resetEmail" class="form-control" required 
+                       placeholder="tucorreo@ejemplo.com" autocomplete="email">
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar correo de recuperación</button>
+            <div class="form-footer">
+                <a href="#" id="backToLoginLink">Volver al inicio de sesión</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Verificación inicial de variables de entorno
+        if (!window.ENV) {
+            console.error('Variables de entorno no encontradas');
+            window.location.href = '/error.html';
+        }
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: window.ENV.FIREBASE_API_KEY,
+            authDomain: window.ENV.FIREBASE_AUTH_DOMAIN,
+            projectId: window.ENV.FIREBASE_PROJECT_ID,
+            storageBucket: window.ENV.FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: window.ENV.FIREBASE_MESSAGING_SENDER_ID,
+            appId: window.ENV.FIREBASE_APP_ID
+        };
+
+        let auth;
+        let initializing = true;
+
+        // Función para manejar redirecciones de manera segura
+        function safeRedirect(path) {
+            console.log("Intentando redirección a:", path);
+            try {
+                window.location.replace(path);
+            } catch (error) {
+                console.error("Error en redirección:", error);
+                window.location.href = path;
+            }
+        }
+
+        // Función para mostrar/ocultar loader
+        function toggleLoading(show) {
+            const loader = document.getElementById('loading');
+            if (loader) {
+                loader.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // Función para mostrar errores
+        function showError(message) {
+            console.log("Mostrando error:", message);
+            const alert = document.getElementById('alertError');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        // Función para mostrar mensajes de éxito
+        function showSuccess(message) {
+            console.log("Mostrando éxito:", message);
+            const alert = document.getElementById('alertSuccess');
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => alert.style.display = 'none', 5000);
+        }
+
+        // Inicialización de Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            
+            // Configurar persistencia
+            auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                .then(() => {
+                    console.log("Persistencia configurada correctamente");
+                    const currentUser = auth.currentUser;
+                    if (currentUser) {
+                        console.log("Usuario existente encontrado:", currentUser.email);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al configurar persistencia:", error);
+                });
+                
+            console.log("Firebase inicializado correctamente");
+        } catch (error) {
+            console.error("Error al inicializar Firebase:", error);
+            showError("Error al inicializar la aplicación");
+        }
+
+        // Función para login con Google
+        async function signInWithGoogle() {
+            const googleBtn = document.getElementById('googleSignInBtn');
+            googleBtn.disabled = true;
+            toggleLoading(true);
+            
+            try {
+                console.log("Iniciando proceso de login con Google...");
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+
+                console.log("Intentando auth con popup...");
+                const result = await auth.signInWithPopup(provider);
+                
+                if (result.user) {
+                    console.log("Login exitoso:", result.user.email);
+                    sessionStorage.setItem('justLoggedIn', 'true');
+                    safeRedirect('/menu');
+                }
+            } catch (error) {
+                console.error("Error en autenticación:", error);
+                let errorMessage;
+                
+                switch (error.code) {
+                    case 'auth/popup-closed-by-user':
+                        errorMessage = 'La ventana de autenticación se cerró. Por favor, intenta nuevamente.';
+                        break;
+                    case 'auth/popup-blocked':
+                        errorMessage = 'El navegador bloqueó la ventana emergente. Por favor, permite ventanas emergentes y vuelve a intentar.';
+                        break;
+                    case 'auth/cancelled-popup-request':
+                        errorMessage = 'Operación cancelada. Por favor, intenta nuevamente.';
+                        break;
+                        case 'auth/network-request-failed':
+                       errorMessage = 'Error de conexión. Por favor, verifica tu internet y vuelve a intentar.';
+                       break;
+                   default:
+                       errorMessage = 'Error al iniciar sesión con Google. Por favor, intenta nuevamente.';
+               }
+               
+               showError(errorMessage);
+           } finally {
+               googleBtn.disabled = false;
+               toggleLoading(false);
+           }
+       }
+
+       // Manejo del estado de autenticación
+       auth.onAuthStateChanged(async (user) => {
+           console.log("Estado de autenticación cambiado. Usuario:", user);
+           
+           try {
+               if (user) {
+                   console.log("Usuario autenticado:", user.email);
+                   console.log("Proveedor:", user.providerData[0]?.providerId);
+                   
+                   // Verificar si acabamos de iniciar sesión
+                   const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+                   if (justLoggedIn) {
+                       sessionStorage.removeItem('justLoggedIn');
+                       console.log("Redirigiendo después de login...");
+                       safeRedirect('/menu');
+                       return;
+                   }
+                   
+                   // Verificar el proveedor
+                   if (user.providerData[0]?.providerId === 'google.com') {
+                       console.log("Usuario de Google, redirigiendo...");
+                       safeRedirect('/menu');
+                   } else if (user.emailVerified) {
+                       console.log("Usuario verificado, redirigiendo...");
+                       safeRedirect('/menu');
+                   } else {
+                       console.log("Usuario no verificado");
+                       await auth.signOut();
+                       showError("Por favor verifica tu email antes de iniciar sesión");
+                   }
+               }
+           } catch (error) {
+               console.error("Error en manejo de autenticación:", error);
+               showError("Error en la autenticación");
+           } finally {
+               toggleLoading(false);
+           }
+       });
+
+       // Inicialización cuando el DOM está listo
+       document.addEventListener('DOMContentLoaded', () => {
+           console.log("DOM cargado, configurando listeners...");
+
+           // Configurar botón de Google
+           document.getElementById('googleSignInBtn').addEventListener('click', signInWithGoogle);
+
+           // Configurar formulario de login
+           document.getElementById('loginForm').addEventListener('submit', async (e) => {
+               e.preventDefault();
+               toggleLoading(true);
+               
+               try {
+                   const email = document.getElementById('loginEmail').value;
+                   const password = document.getElementById('loginPassword').value;
+                   console.log("Intentando login para:", email);
+                   
+                   const result = await auth.signInWithEmailAndPassword(email, password);
+                   console.log("Login exitoso:", result.user.email);
+
+                   if (!result.user.emailVerified) {
+                       console.log("Usuario no verificado, enviando nuevo email");
+                       await auth.signOut();
+                       showError("Por favor verifica tu email antes de iniciar sesión");
+                       return;
+                   }
+
+                   sessionStorage.setItem('justLoggedIn', 'true');
+               } catch (error) {
+                   console.error("Error en login:", error);
+                   const errorMessages = {
+                       'auth/wrong-password': 'Contraseña incorrecta',
+                       'auth/user-not-found': 'Usuario no encontrado',
+                       'auth/invalid-email': 'Email inválido',
+                       'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde'
+                   };
+                   showError(errorMessages[error.code] || error.message);
+               } finally {
+                   toggleLoading(false);
+               }
+           });
+
+           // Configurar formulario de registro
+           document.getElementById('registerForm').addEventListener('submit', async (e) => {
+               e.preventDefault();
+               toggleLoading(true);
+               
+               try {
+                   const name = document.getElementById('registerName').value;
+                   const email = document.getElementById('registerEmail').value;
+                   const password = document.getElementById('registerPassword').value;
+                   
+                   console.log("Creando cuenta para:", email);
+                   const result = await auth.createUserWithEmailAndPassword(email, password);
+                   
+                   await result.user.updateProfile({ displayName: name });
+                   await result.user.sendEmailVerification();
+                   console.log("Email de verificación enviado");
+                   
+                   showSuccess("Cuenta creada. Por favor verifica tu email");
+                   document.getElementById('registerForm').style.display = 'none';
+                   document.getElementById('loginForm').style.display = 'block';
+               } catch (error) {
+                   console.error("Error en registro:", error);
+                   const errorMessages = {
+                       'auth/weak-password': 'La contraseña es muy débil',
+                       'auth/email-already-in-use': 'Este email ya está registrado',
+                       'auth/invalid-email': 'Email inválido'
+                   };
+                   showError(errorMessages[error.code] || error.message);
+               } finally {
+                   toggleLoading(false);
+               }
+           });
+
+           // Configurar enlaces de navegación
+           document.getElementById('resetPasswordLink').addEventListener('click', (e) => {
+               e.preventDefault();
+               document.getElementById('loginForm').style.display = 'none';
+               document.getElementById('resetForm').style.display = 'block';
+           });
+
+           document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+               e.preventDefault();
+               document.getElementById('resetForm').style.display = 'none';
+               document.getElementById('loginForm').style.display = 'block';
+           });
+
+           // Configurar formulario de recuperación de contraseña
+           document.getElementById('resetForm').addEventListener('submit', async (e) => {
+               e.preventDefault();
+               toggleLoading(true);
+               
+               try {
+                   const email = document.getElementById('resetEmail').value;
+                   await auth.sendPasswordResetEmail(email);
+                   
+                   showSuccess("Se ha enviado un correo de recuperación");
+                   document.getElementById('resetForm').style.display = 'none';
+                   document.getElementById('loginForm').style.display = 'block';
+               } catch (error) {
+                   console.error("Error en recuperación:", error);
+                   const errorMessages = {
+                       'auth/user-not-found': 'No existe una cuenta con este email',
+                       'auth/invalid-email': 'Email inválido'
+                   };
+                   showError(errorMessages[error.code] || error.message);
+               } finally {
+                   toggleLoading(false);
+               }
+           });
+
+           // Verificar variables de entorno
+           console.log("Variables de entorno cargadas:", {
+               apiKey: window.ENV.FIREBASE_API_KEY ? 'Presente' : 'Ausente',
+               authDomain: window.ENV.FIREBASE_AUTH_DOMAIN ? 'Presente' : 'Ausente',
+               projectId: window.ENV.FIREBASE_PROJECT_ID ? 'Presente' : 'Ausente',
+               storageBucket: window.ENV.FIREBASE_STORAGE_BUCKET ? 'Presente' : 'Ausente',
+               messagingSenderId: window.ENV.FIREBASE_MESSAGING_SENDER_ID ? 'Presente' : 'Ausente',
+               appId: window.ENV.FIREBASE_APP_ID ? 'Presente' : 'Ausente'
+           });
+       });
+
+       // Manejo global de errores
+       window.onerror = function(message, source, lineno, colno, error) {
+           console.error('Error global:', {
+               message,
+               source,
+               lineno,
+               colno,
+               error
+           });
+           showError('Ocurrió un error inesperado. Por favor, recarga la página.');
+           toggleLoading(false);
+           return false;
+       };
+   </script>
 </body>
 </html>
